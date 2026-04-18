@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>评测机管理台</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+      background: #0f0f13;
+      color: #e8e8ef;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      border-bottom: 1px solid #2a2a3e;
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header h1 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: #fff;
+    }
+    .header h1 span { color: #6c8cff; }
+    .header-actions { display: flex; gap: 10px; }
+
+    /* Buttons */
+    .btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: #6c8cff; color: #fff; }
+    .btn-primary:hover { background: #5a7aef; transform: translateY(-1px); }
+    .btn-ghost { background: transparent; color: #888; border: 1px solid #333; }
+    .btn-ghost:hover { border-color: #6c8cff; color: #6c8cff; }
+    .btn-sm { padding: 5px 11px; font-size: 12px; border-radius: 6px; }
+    .btn-danger { background: #ff4d6d22; color: #ff4d6d; border: 1px solid #ff4d6d44; }
+    .btn-danger:hover { background: #ff4d6d33; }
+    .btn-warn { background: #ffb86c22; color: #ffb86c; border: 1px solid #ffb86c44; }
+    .btn-warn:hover { background: #ffb86c33; }
+    .btn-success { background: #50fa7b22; color: #50fa7b; border: 1px solid #50fa7b44; }
+    .btn-success:hover { background: #50fa7b33; }
+    .btn-info { background: #8be9fd22; color: #8be9fd; border: 1px solid #8be9fd44; }
+    .btn-info:hover { background: #8be9fd33; }
+
+    /* Stats bar */
+    .stats-bar {
+      display: flex;
+      gap: 12px;
+      padding: 20px 32px;
+      overflow-x: auto;
+    }
+    .stat-card {
+      background: #1a1a2e;
+      border: 1px solid #2a2a3e;
+      border-radius: 12px;
+      padding: 14px 20px;
+      min-width: 130px;
+      flex-shrink: 0;
+    }
+    .stat-card .label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .stat-card .value { font-size: 26px; font-weight: 700; color: #fff; }
+    .stat-card.blue .value { color: #6c8cff; }
+    .stat-card.green .value { color: #50fa7b; }
+    .stat-card.orange .value { color: #ffb86c; }
+    .stat-card.red .value { color: #ff4d6d; }
+
+    /* Search / Filter */
+    .toolbar {
+      padding: 0 32px 16px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .search-box {
+      flex: 1;
+      max-width: 320px;
+      background: #1a1a2e;
+      border: 1px solid #2a2a3e;
+      border-radius: 8px;
+      padding: 8px 14px;
+      color: #e8e8ef;
+      font-size: 13px;
+      outline: none;
+    }
+    .search-box:focus { border-color: #6c8cff; }
+    .filter-btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid #2a2a3e;
+      background: #1a1a2e;
+      color: #888;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    .filter-btn.active { background: #6c8cff22; border-color: #6c8cff; color: #6c8cff; }
+    .filter-btn:hover { border-color: #6c8cff; color: #6c8cff; }
+
+    /* Brand sections */
+    .brands-container { padding: 0 32px 40px; }
+    .brand-section {
+      margin-bottom: 28px;
+      background: #1a1a2e;
+      border: 1px solid #2a2a3e;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .brand-header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #16162a;
+      border-bottom: 1px solid #2a2a3e;
+      cursor: pointer;
+      user-select: none;
+    }
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 800;
+      color: #fff;
+    }
+    .brand-name { font-size: 16px; font-weight: 700; color: #fff; }
+    .brand-count {
+      margin-left: auto;
+      background: #6c8cff22;
+      color: #6c8cff;
+      border: 1px solid #6c8cff33;
+      border-radius: 20px;
+      padding: 2px 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .brand-toggle { color: #555; font-size: 12px; margin-left: 8px; transition: transform 0.2s; }
+    .brand-toggle.collapsed { transform: rotate(-90deg); }
+
+    /* Device cards */
+    .devices-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 14px;
+      padding: 16px;
+    }
+    .device-card {
+      background: #0f0f1a;
+      border: 1px solid #2a2a3e;
+      border-radius: 12px;
+      padding: 16px;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .device-card:hover { border-color: #3a3a5e; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+    .device-card.status-in { border-left: 3px solid #50fa7b; }
+    .device-card.status-lent { border-left: 3px solid #ffb86c; }
+    .device-card.status-returned { border-left: 3px solid #6272a4; }
+    .device-card.status-overdue { border-left: 3px solid #ff4d6d; }
+
+    .card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
+    .device-name { font-size: 15px; font-weight: 700; color: #fff; line-height: 1.3; }
+    .device-model { font-size: 11px; color: #666; margin-top: 2px; }
+    .status-badge {
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .badge-in { background: #50fa7b22; color: #50fa7b; border: 1px solid #50fa7b44; }
+    .badge-lent { background: #ffb86c22; color: #ffb86c; border: 1px solid #ffb86c44; }
+    .badge-returned { background: #6272a422; color: #6272a4; border: 1px solid #6272a444; }
+    .badge-overdue { background: #ff4d6d22; color: #ff4d6d; border: 1px solid #ff4d6d44; }
+
+    .card-meta { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+    .meta-row { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #888; }
+    .meta-row .icon { font-size: 13px; }
+    .meta-row strong { color: #b8b8cc; }
+
+    .card-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .overdue-days {
+      font-size: 11px;
+      color: #ff4d6d;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #444;
+    }
+    .empty-state .icon { font-size: 48px; margin-bottom: 16px; }
+    .empty-state p { font-size: 14px; }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #1a1a2e;
+      border: 1px solid #2a2a3e;
+      border-radius: 20px;
+      padding: 28px;
+      width: 480px;
+      max-width: 95vw;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal h2 { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: #fff; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 12px; color: #888; margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      background: #0f0f1a;
+      border: 1px solid #2a2a3e;
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: #e8e8ef;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #6c8cff; }
+    .form-group textarea { resize: vertical; min-height: 70px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px; }
+
+    /* Notifications */
+    .notification {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1a1a2e;
+      border: 1px solid #2a2a3e;
+      border-radius: 12px;
+      padding: 14px 20px;
+      font-size: 14px;
+      color: #e8e8ef;
+      z-index: 2000;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.3s;
+      max-width: 320px;
+    }
+    .notification.show { transform: translateY(0); opacity: 1; }
+    .notification.success { border-left: 3px solid #50fa7b; }
+    .notification.error { border-left: 3px solid #ff4d6d; }
+
+    /* Timeline view toggle */
+    .view-toggle { display: flex; background: #1a1a2e; border: 1px solid #2a2a3e; border-radius: 8px; overflow: hidden; }
+    .view-toggle button { padding: 7px 14px; background: none; border: none; color: #666; cursor: pointer; font-size: 12px; transition: all 0.2s; }
+    .view-toggle button.active { background: #6c8cff; color: #fff; }
+
+    /* Due soon highlight */
+    .due-soon { animation: pulse 2s infinite; }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255, 184, 108, 0.3); }
+      50% { box-shadow: 0 0 0 6px rgba(255, 184, 108, 0); }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f0f13; }
+    ::-webkit-scrollbar-thumb { background: #2a2a3e; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3a3a5e; }
+
+    /* Color chip for brand */
+    .color-chip { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+    @media (max-width: 600px) {
+      .header { padding: 16px; }
+      .stats-bar { padding: 12px 16px; }
+      .toolbar { padding: 0 16px 12px; }
+      .brands-container { padding: 0 16px 32px; }
+      .devices-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📱 评测机<span>管理台</span></h1>
+  <div class="header-actions">
+    <button class="btn btn-ghost btn-sm" onclick="exportData()">📤 导出</button>
+    <button class="btn btn-ghost btn-sm" onclick="importData()">📥 导入</button>
+    <button class="btn btn-primary" onclick="openAddModal()">＋ 添加设备</button>
+  </div>
+</div>
+
+<div class="stats-bar" id="statsBar"></div>
+
+<div class="toolbar">
+  <input class="search-box" type="text" placeholder="搜索型号、借用人…" oninput="filterDevices(this.value)" />
+  <button class="filter-btn active" onclick="setFilter('all', this)">全部</button>
+  <button class="filter-btn" onclick="setFilter('in', this)">📦 在库</button>
+  <button class="filter-btn" onclick="setFilter('lent', this)">📤 借出中</button>
+  <button class="filter-btn" onclick="setFilter('overdue', this)">🔴 逾期</button>
+  <button class="filter-btn" onclick="setFilter('returned', this)">✅ 已归还</button>
+  <div style="margin-left: auto;" class="view-toggle">
+    <button class="active" onclick="setView('brand', this)">按品牌</button>
+    <button onclick="setView('timeline', this)">时间线</button>
+  </div>
+</div>
+
+<div class="brands-container" id="brandsContainer"></div>
+
+<!-- Add/Edit Device Modal -->
+<div class="modal-overlay" id="deviceModal">
+  <div class="modal">
+    <h2 id="modalTitle">添加设备</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>品牌</label>
+        <input type="text" id="f-brand" placeholder="Apple / 小米 / 三星…" list="brandList" />
+        <datalist id="brandList"></datalist>
+      </div>
+      <div class="form-group">
+        <label>型号</label>
+        <input type="text" id="f-model" placeholder="iPhone 16 Pro" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>颜色 / 规格</label>
+        <input type="text" id="f-variant" placeholder="自然钛 / 256GB" />
+      </div>
+      <div class="form-group">
+        <label>到机日期</label>
+        <input type="date" id="f-arrivalDate" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label>编号 / 序列号（选填）</label>
+      <input type="text" id="f-serial" placeholder="SN / IMEI" />
+    </div>
+    <div class="form-group">
+      <label>来源</label>
+      <input type="text" id="f-source" placeholder="品牌公关 / 自购…" />
+    </div>
+    <div class="form-group">
+      <label>备注</label>
+      <textarea id="f-notes" placeholder="额外说明…"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('deviceModal')">取消</button>
+      <button class="btn btn-primary" onclick="saveDevice()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Lend Modal -->
+<div class="modal-overlay" id="lendModal">
+  <div class="modal">
+    <h2>借出设备</h2>
+    <div class="form-group">
+      <label>借用人</label>
+      <input type="text" id="l-borrower" placeholder="姓名" />
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>借出日期</label>
+        <input type="date" id="l-lendDate" />
+      </div>
+      <div class="form-group">
+        <label>预计归还日期</label>
+        <input type="date" id="l-dueDate" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label>用途</label>
+      <input type="text" id="l-purpose" placeholder="评测 / 拍摄借用…" />
+    </div>
+    <div class="form-group">
+      <label>联系方式（选填）</label>
+      <input type="text" id="l-contact" placeholder="微信 / 电话" />
+    </div>
+    <div class="form-group">
+      <label>备注</label>
+      <textarea id="l-notes" placeholder="额外说明…"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('lendModal')">取消</button>
+      <button class="btn btn-primary" onclick="saveLend()">确认借出</button>
+    </div>
+  </div>
+</div>
+
+<!-- Return Modal -->
+<div class="modal-overlay" id="returnModal">
+  <div class="modal">
+    <h2>确认归还</h2>
+    <div class="form-group">
+      <label>实际归还日期</label>
+      <input type="date" id="r-returnDate" />
+    </div>
+    <div class="form-group">
+      <label>设备状态</label>
+      <select id="r-condition">
+        <option value="完好">完好</option>
+        <option value="轻微磨损">轻微磨损</option>
+        <option value="有损坏">有损坏</option>
+        <option value="其他">其他</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>备注</label>
+      <textarea id="r-notes" placeholder="归还备注…"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('returnModal')">取消</button>
+      <button class="btn btn-primary" onclick="saveReturn()">确认归还</button>
+    </div>
+  </div>
+</div>
+
+<!-- History Modal -->
+<div class="modal-overlay" id="historyModal">
+  <div class="modal" style="width:560px">
+    <h2>借用记录</h2>
+    <div id="historyContent" style="max-height:400px;overflow-y:auto;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('historyModal')">关闭</button>
+    </div>
+  </div>
+</div>
+
+<div class="notification" id="notification"></div>
+
+<script>
+window.__INITIAL_DATA__ = {"devices": [{"id": "d001", "brand": "vivo", "model": "X100S", "variant": "", "arrivalDate": "", "serial": "", "source": "", "notes": "", "lends": [{"id": "l001", "borrower": "苏扬", "lendDate": "2026-04-18", "dueDate": "", "purpose": "", "contact": "", "notes": "", "returnDate": null}], "createdAt": "2026-04-18T08:27:00.000Z"}, {"id": "d002", "brand": "vivo", "model": "X100 Ultra", "variant": "", "arrivalDate": "", "serial": "", "source": "", "notes": "", "lends": [{"id": "l002", "borrower": "苏扬", "lendDate": "2026-04-18", "dueDate": "", "purpose": "", "contact": "", "notes": "", "returnDate": null}], "createdAt": "2026-04-18T08:27:00.000Z"}, {"id": "d003", "brand": "华为", "model": "MatePad mini", "variant": "", "arrivalDate": "", "serial": "", "source": "", "notes": "", "lends": [{"id": "l003", "borrower": "苏扬", "lendDate": "2026-04-18", "dueDate": "", "purpose": "", "contact": "", "notes": "", "returnDate": null}], "createdAt": "2026-04-18T08:27:00.000Z"}, {"id": "d004", "brand": "Apple", "model": "MacBook Pro M1", "variant": "", "arrivalDate": "", "serial": "", "source": "", "notes": "", "lends": [{"id": "l004", "borrower": "苏扬", "lendDate": "2026-04-18", "dueDate": "", "purpose": "", "contact": "", "notes": "", "returnDate": null}], "createdAt": "2026-04-18T08:27:00.000Z"}, {"id": "d005", "brand": "小米", "model": "17 Pro", "variant": "", "arrivalDate": "", "serial": "", "source": "", "notes": "", "lends": [{"id": "l005", "borrower": "赵阳", "lendDate": "2026-04-18", "dueDate": "", "purpose": "", "contact": "", "notes": "", "returnDate": null}], "createdAt": "2026-04-18T08:27:00.000Z"}, {"id": "d006", "brand": "vivo", "model": "X300 Ultra", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T08:30:00.000Z"}, {"id": "d007", "brand": "vivo", "model": "X300S", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T08:30:00.000Z"}, {"id": "d008", "brand": "OPPO", "model": "Find X9 Ultra", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T08:30:00.000Z"}, {"id": "d009", "brand": "OPPO", "model": "Find X9S", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T08:30:00.000Z"}, {"id": "d010", "brand": "Redmi", "model": "K90 Max", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T08:30:00.000Z"}, {"id": "d011", "brand": "Redmi", "model": "KPad 2", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T08:30:00.000Z"}, {"id": "d012", "brand": "华为", "model": "畅享 90 Pro Max", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T08:30:00.000Z"}], "lastUpdated": "2026-04-18"};
+// ─── Data Layer ───────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'reviewDevices_v1';
+let data = { devices: [], lastUpdated: '' };
+let currentFilter = 'all';
+let currentSearch = '';
+let currentView = 'brand';
+let editingId = null;
+let lendingId = null;
+let returningId = null;
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) data = JSON.parse(raw);
+  } catch(e) {}
+  // Also try to load from embedded JSON if no localStorage
+  if (!data.devices.length) {
+    try {
+      const embedded = window.__INITIAL_DATA__;
+      if (embedded) { data = embedded; save(); }
+    } catch(e) {}
+  }
+}
+
+function save() {
+  data.lastUpdated = new Date().toISOString().slice(0,10);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+}
+
+// ─── Brand Colors ─────────────────────────────────────────────────────────────
+const BRAND_COLORS = {
+  'Apple': '#a8a8a8',
+  'iPhone': '#a8a8a8',
+  '小米': '#ff6900',
+  'Xiaomi': '#ff6900',
+  '华为': '#cf1322',
+  'Huawei': '#cf1322',
+  'OPPO': '#1a1a1a',
+  'vivo': '#415fff',
+  '三星': '#1428a0',
+  'Samsung': '#1428a0',
+  '一加': '#f5030d',
+  'OnePlus': '#f5030d',
+  '索尼': '#003087',
+  'Sony': '#003087',
+  '荣耀': '#c00d0d',
+  'Honor': '#c00d0d',
+  '魅族': '#ffd000',
+  'Meizu': '#ffd000',
+  'Google': '#4285f4',
+  '联想': '#e2231a',
+  'Lenovo': '#e2231a',
+  'Nothing': '#e4e4e4',
+};
+
+function getBrandColor(brand) {
+  const b = brand.trim();
+  if (BRAND_COLORS[b]) return BRAND_COLORS[b];
+  // Generate deterministic color from brand name
+  let hash = 0;
+  for (let i = 0; i < b.length; i++) hash = b.charCodeAt(i) + ((hash << 5) - hash);
+  const hue = Math.abs(hash) % 360;
+  return `hsl(${hue}, 60%, 60%)`;
+}
+
+function getBrandInitial(brand) {
+  const b = brand.trim();
+  if (!b) return '?';
+  // Chinese brands: first char; Latin: first two letters
+  if (/[\u4e00-\u9fa5]/.test(b[0])) return b[0];
+  return b.slice(0,2).toUpperCase();
+}
+
+// ─── Status Logic ─────────────────────────────────────────────────────────────
+function getStatus(device) {
+  if (!device.lends || !device.lends.length) return 'in';
+  const lastLend = device.lends[device.lends.length - 1];
+  if (lastLend.returnDate) return 'returned';
+  // Check overdue
+  if (lastLend.dueDate && lastLend.dueDate < new Date().toISOString().slice(0,10)) return 'overdue';
+  return 'lent';
+}
+
+function getStatusLabel(status) {
+  return { in: '在库', lent: '借出中', returned: '已归还', overdue: '已逾期' }[status] || status;
+}
+
+function getStatusBadgeClass(status) {
+  return { in: 'badge-in', lent: 'badge-lent', returned: 'badge-returned', overdue: 'badge-overdue' }[status] || '';
+}
+
+function getOverdueDays(device) {
+  const lastLend = device.lends && device.lends[device.lends.length - 1];
+  if (!lastLend || lastLend.returnDate || !lastLend.dueDate) return 0;
+  const today = new Date().toISOString().slice(0,10);
+  if (lastLend.dueDate >= today) return 0;
+  const diff = (new Date(today) - new Date(lastLend.dueDate)) / 86400000;
+  return Math.floor(diff);
+}
+
+function getDueSoonDays(device) {
+  const lastLend = device.lends && device.lends[device.lends.length - 1];
+  if (!lastLend || lastLend.returnDate || !lastLend.dueDate) return null;
+  const today = new Date().toISOString().slice(0,10);
+  if (lastLend.dueDate < today) return null;
+  const diff = (new Date(lastLend.dueDate) - new Date(today)) / 86400000;
+  return diff <= 3 ? Math.ceil(diff) : null;
+}
+
+// ─── Render ───────────────────────────────────────────────────────────────────
+function render() {
+  renderStats();
+  if (currentView === 'brand') renderBrandView();
+  else renderTimelineView();
+  updateBrandDatalist();
+}
+
+function filteredDevices() {
+  return data.devices.filter(d => {
+    const status = getStatus(d);
+    const matchFilter = currentFilter === 'all' || status === currentFilter;
+    const q = currentSearch.toLowerCase();
+    const matchSearch = !q ||
+      (d.brand || '').toLowerCase().includes(q) ||
+      (d.model || '').toLowerCase().includes(q) ||
+      (d.variant || '').toLowerCase().includes(q) ||
+      (d.source || '').toLowerCase().includes(q) ||
+      ((d.lends || []).some(l => (l.borrower || '').toLowerCase().includes(q)));
+    return matchFilter && matchSearch;
+  });
+}
+
+function renderStats() {
+  const all = data.devices;
+  const total = all.length;
+  const inStock = all.filter(d => getStatus(d) === 'in').length;
+  const lent = all.filter(d => getStatus(d) === 'lent').length;
+  const overdue = all.filter(d => getStatus(d) === 'overdue').length;
+  const returned = all.filter(d => getStatus(d) === 'returned').length;
+  document.getElementById('statsBar').innerHTML = `
+    <div class="stat-card blue"><div class="label">总设备</div><div class="value">${total}</div></div>
+    <div class="stat-card green"><div class="label">在库</div><div class="value">${inStock}</div></div>
+    <div class="stat-card orange"><div class="label">借出中</div><div class="value">${lent}</div></div>
+    <div class="stat-card red"><div class="label">已逾期</div><div class="value">${overdue}</div></div>
+    <div class="stat-card"><div class="label">已归还</div><div class="value">${returned}</div></div>
+  `;
+}
+
+function renderBrandView() {
+  const devices = filteredDevices();
+  // Group by brand
+  const brands = {};
+  devices.forEach(d => {
+    const b = d.brand || '未知品牌';
+    if (!brands[b]) brands[b] = [];
+    brands[b].push(d);
+  });
+
+  if (!Object.keys(brands).length) {
+    document.getElementById('brandsContainer').innerHTML = `
+      <div class="empty-state">
+        <div class="icon">📱</div>
+        <p>还没有设备记录，点击右上角「添加设备」开始吧</p>
+      </div>`;
+    return;
+  }
+
+  // Sort brands alphabetically
+  const sortedBrands = Object.keys(brands).sort();
+  
+  document.getElementById('brandsContainer').innerHTML = sortedBrands.map(brand => {
+    const devs = brands[brand];
+    const color = getBrandColor(brand);
+    const initial = getBrandInitial(brand);
+    return `
+    <div class="brand-section" id="brand-${encodeURIComponent(brand)}">
+      <div class="brand-header" onclick="toggleBrand('${encodeURIComponent(brand)}')">
+        <div class="brand-logo" style="background:${color}20;color:${color};border:1px solid ${color}33">${initial}</div>
+        <span class="brand-name">${brand}</span>
+        <span class="brand-count">${devs.length} 台</span>
+        <span class="brand-toggle" id="toggle-${encodeURIComponent(brand)}">▾</span>
+      </div>
+      <div class="devices-grid" id="grid-${encodeURIComponent(brand)}">
+        ${devs.map(d => renderDeviceCard(d)).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderDeviceCard(d) {
+  const status = getStatus(d);
+  const overdueDays = getOverdueDays(d);
+  const dueSoonDays = getDueSoonDays(d);
+  const lastLend = d.lends && d.lends.length ? d.lends[d.lends.length-1] : null;
+
+  let metaHtml = '';
+  if (d.arrivalDate) metaHtml += `<div class="meta-row"><span class="icon">📦</span> 到机 <strong>${d.arrivalDate}</strong></div>`;
+  if (d.source) metaHtml += `<div class="meta-row"><span class="icon">🏢</span> 来源 <strong>${d.source}</strong></div>`;
+  if (lastLend && !lastLend.returnDate) {
+    metaHtml += `<div class="meta-row"><span class="icon">👤</span> 借用人 <strong>${lastLend.borrower}</strong></div>`;
+    metaHtml += `<div class="meta-row"><span class="icon">📅</span> 借出 <strong>${lastLend.lendDate}</strong></div>`;
+    if (lastLend.dueDate) metaHtml += `<div class="meta-row"><span class="icon">⏰</span> 预还 <strong>${lastLend.dueDate}</strong></div>`;
+  }
+  if (lastLend && lastLend.returnDate) {
+    metaHtml += `<div class="meta-row"><span class="icon">✅</span> 归还 <strong>${lastLend.returnDate}</strong></div>`;
+    if (lastLend.borrower) metaHtml += `<div class="meta-row"><span class="icon">👤</span> 借用人 <strong>${lastLend.borrower}</strong></div>`;
+  }
+
+  let actionsHtml = '';
+  if (status === 'in') {
+    actionsHtml += `<button class="btn btn-sm btn-warn" onclick="openLendModal('${d.id}')">借出</button>`;
+  } else if (status === 'lent' || status === 'overdue') {
+    actionsHtml += `<button class="btn btn-sm btn-success" onclick="openReturnModal('${d.id}')">归还</button>`;
+    actionsHtml += `<button class="btn btn-sm btn-warn" onclick="openLendModal('${d.id}')">再借</button>`;
+  } else if (status === 'returned') {
+    actionsHtml += `<button class="btn btn-sm btn-warn" onclick="openLendModal('${d.id}')">借出</button>`;
+  }
+  if (d.lends && d.lends.length > 0) {
+    actionsHtml += `<button class="btn btn-sm btn-info" onclick="openHistory('${d.id}')">记录(${d.lends.length})</button>`;
+  }
+  actionsHtml += `<button class="btn btn-sm btn-ghost" onclick="openEditModal('${d.id}')">编辑</button>`;
+  actionsHtml += `<button class="btn btn-sm btn-danger" onclick="deleteDevice('${d.id}')">删除</button>`;
+
+  const dueSoonHtml = dueSoonDays !== null ? `<div class="overdue-days">⚠️ ${dueSoonDays} 天后到期</div>` : '';
+  const overdueHtml = overdueDays > 0 ? `<div class="overdue-days">🔴 已逾期 ${overdueDays} 天</div>` : '';
+
+  return `
+  <div class="device-card status-${status} ${dueSoonDays !== null ? 'due-soon' : ''}">
+    <div class="card-header">
+      <div>
+        <div class="device-name">${d.model}</div>
+        <div class="device-model">${d.variant || ''}</div>
+      </div>
+      <span class="status-badge ${getStatusBadgeClass(status)}">${getStatusLabel(status)}</span>
+    </div>
+    <div class="card-meta">${metaHtml}</div>
+    ${overdueHtml}${dueSoonHtml}
+    <div class="card-actions">${actionsHtml}</div>
+  </div>`;
+}
+
+function renderTimelineView() {
+  // All lend events sorted by date desc
+  const events = [];
+  filteredDevices().forEach(d => {
+    (d.lends || []).forEach(l => {
+      events.push({ device: d, lend: l, date: l.lendDate });
+      if (l.returnDate) events.push({ device: d, lend: l, date: l.returnDate, isReturn: true });
+    });
+    if (!d.lends || !d.lends.length) {
+      events.push({ device: d, lend: null, date: d.arrivalDate, isArrival: true });
+    }
+  });
+  events.sort((a,b) => (b.date||'').localeCompare(a.date||''));
+
+  if (!events.length) {
+    document.getElementById('brandsContainer').innerHTML = `<div class="empty-state"><div class="icon">📅</div><p>没有时间线记录</p></div>`;
+    return;
+  }
+
+  const color = getBrandColor;
+  document.getElementById('brandsContainer').innerHTML = `
+  <div style="max-width:640px;margin:0 auto;">
+    ${events.map(e => `
+    <div style="display:flex;gap:16px;margin-bottom:16px;align-items:flex-start;">
+      <div style="text-align:right;min-width:90px;padding-top:4px;">
+        <div style="font-size:12px;color:#666;">${e.date||'—'}</div>
+      </div>
+      <div style="position:relative;display:flex;flex-direction:column;align-items:center;">
+        <div style="width:12px;height:12px;border-radius:50%;background:${e.isReturn?'#50fa7b':e.isArrival?'#6c8cff':'#ffb86c'};flex-shrink:0;margin-top:4px;"></div>
+        <div style="width:2px;flex:1;background:#2a2a3e;min-height:20px;margin-top:4px;"></div>
+      </div>
+      <div style="background:#1a1a2e;border:1px solid #2a2a3e;border-radius:10px;padding:12px 16px;flex:1;">
+        <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;">
+          ${e.device.brand} ${e.device.model} ${e.device.variant||''}
+        </div>
+        <div style="font-size:12px;color:#888;">
+          ${e.isReturn ? `✅ 归还 · ${e.lend.borrower}` : e.isArrival ? `📦 到机 · ${e.device.source||''}` : `📤 借出 · ${e.lend.borrower}${e.lend.dueDate?' · 预还 '+e.lend.dueDate:''}`}
+        </div>
+        ${e.lend && e.lend.purpose ? `<div style="font-size:11px;color:#555;margin-top:3px;">${e.lend.purpose}</div>` : ''}
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+// ─── UI Interactions ──────────────────────────────────────────────────────────
+function toggleBrand(encoded) {
+  const grid = document.getElementById('grid-'+encoded);
+  const toggle = document.getElementById('toggle-'+encoded);
+  if (grid.style.display === 'none') {
+    grid.style.display = 'grid';
+    toggle.classList.remove('collapsed');
+  } else {
+    grid.style.display = 'none';
+    toggle.classList.add('collapsed');
+  }
+}
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function filterDevices(q) {
+  currentSearch = q;
+  render();
+}
+
+function setView(v, btn) {
+  currentView = v;
+  document.querySelectorAll('.view-toggle button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function updateBrandDatalist() {
+  const brands = [...new Set(data.devices.map(d => d.brand).filter(Boolean))];
+  document.getElementById('brandList').innerHTML = brands.map(b => `<option value="${b}">`).join('');
+}
+
+// ─── Modals ───────────────────────────────────────────────────────────────────
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+// Close on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) closeModal(o.id); });
+});
+
+function openAddModal() {
+  editingId = null;
+  document.getElementById('modalTitle').textContent = '添加设备';
+  ['brand','model','variant','serial','source','notes'].forEach(f => document.getElementById('f-'+f).value = '');
+  document.getElementById('f-arrivalDate').value = new Date().toISOString().slice(0,10);
+  openModal('deviceModal');
+}
+
+function openEditModal(id) {
+  const d = data.devices.find(x => x.id === id);
+  if (!d) return;
+  editingId = id;
+  document.getElementById('modalTitle').textContent = '编辑设备';
+  document.getElementById('f-brand').value = d.brand || '';
+  document.getElementById('f-model').value = d.model || '';
+  document.getElementById('f-variant').value = d.variant || '';
+  document.getElementById('f-arrivalDate').value = d.arrivalDate || '';
+  document.getElementById('f-serial').value = d.serial || '';
+  document.getElementById('f-source').value = d.source || '';
+  document.getElementById('f-notes').value = d.notes || '';
+  openModal('deviceModal');
+}
+
+function saveDevice() {
+  const brand = document.getElementById('f-brand').value.trim();
+  const model = document.getElementById('f-model').value.trim();
+  if (!model) { notify('型号不能为空', 'error'); return; }
+
+  if (editingId) {
+    const d = data.devices.find(x => x.id === editingId);
+    if (d) {
+      d.brand = brand;
+      d.model = model;
+      d.variant = document.getElementById('f-variant').value.trim();
+      d.arrivalDate = document.getElementById('f-arrivalDate').value;
+      d.serial = document.getElementById('f-serial').value.trim();
+      d.source = document.getElementById('f-source').value.trim();
+      d.notes = document.getElementById('f-notes').value.trim();
+    }
+  } else {
+    data.devices.push({
+      id: uid(),
+      brand,
+      model,
+      variant: document.getElementById('f-variant').value.trim(),
+      arrivalDate: document.getElementById('f-arrivalDate').value,
+      serial: document.getElementById('f-serial').value.trim(),
+      source: document.getElementById('f-source').value.trim(),
+      notes: document.getElementById('f-notes').value.trim(),
+      lends: [],
+      createdAt: new Date().toISOString(),
+    });
+  }
+
+  save();
+  render();
+  closeModal('deviceModal');
+  notify(editingId ? '设备信息已更新' : '设备已添加 ✓', 'success');
+}
+
+function openLendModal(id) {
+  lendingId = id;
+  document.getElementById('l-borrower').value = '';
+  document.getElementById('l-lendDate').value = new Date().toISOString().slice(0,10);
+  document.getElementById('l-dueDate').value = '';
+  document.getElementById('l-purpose').value = '';
+  document.getElementById('l-contact').value = '';
+  document.getElementById('l-notes').value = '';
+  openModal('lendModal');
+}
+
+function saveLend() {
+  const borrower = document.getElementById('l-borrower').value.trim();
+  if (!borrower) { notify('借用人不能为空', 'error'); return; }
+  const d = data.devices.find(x => x.id === lendingId);
+  if (!d) return;
+  if (!d.lends) d.lends = [];
+  d.lends.push({
+    id: uid(),
+    borrower,
+    lendDate: document.getElementById('l-lendDate').value,
+    dueDate: document.getElementById('l-dueDate').value,
+    purpose: document.getElementById('l-purpose').value.trim(),
+    contact: document.getElementById('l-contact').value.trim(),
+    notes: document.getElementById('l-notes').value.trim(),
+    returnDate: null,
+  });
+  save();
+  render();
+  closeModal('lendModal');
+  notify(`已借出给 ${borrower} ✓`, 'success');
+}
+
+function openReturnModal(id) {
+  returningId = id;
+  document.getElementById('r-returnDate').value = new Date().toISOString().slice(0,10);
+  document.getElementById('r-condition').value = '完好';
+  document.getElementById('r-notes').value = '';
+  openModal('returnModal');
+}
+
+function saveReturn() {
+  const d = data.devices.find(x => x.id === returningId);
+  if (!d) return;
+  const lastLend = d.lends && d.lends[d.lends.length-1];
+  if (!lastLend || lastLend.returnDate) { notify('没有未归还的借出记录', 'error'); return; }
+  lastLend.returnDate = document.getElementById('r-returnDate').value;
+  lastLend.condition = document.getElementById('r-condition').value;
+  lastLend.returnNotes = document.getElementById('r-notes').value.trim();
+  save();
+  render();
+  closeModal('returnModal');
+  notify('归还记录已保存 ✓', 'success');
+}
+
+function openHistory(id) {
+  const d = data.devices.find(x => x.id === id);
+  if (!d) return;
+  const lends = d.lends || [];
+  const html = lends.length === 0 ? '<p style="color:#666;text-align:center;padding:20px;">暂无借用记录</p>' :
+    lends.slice().reverse().map((l,i) => `
+    <div style="background:#0f0f1a;border:1px solid #2a2a3e;border-radius:10px;padding:14px;margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-weight:700;color:#fff;">${l.borrower}</span>
+        <span style="font-size:11px;color:${l.returnDate?'#50fa7b':'#ffb86c'};">${l.returnDate?'已归还':'借出中'}</span>
+      </div>
+      <div style="font-size:12px;color:#888;line-height:1.8;">
+        📤 借出：${l.lendDate}${l.dueDate?' &nbsp;⏰ 预还：'+l.dueDate:''}
+        ${l.returnDate?`<br>✅ 归还：${l.returnDate}${l.condition?' ('+l.condition+')':''}`:''} 
+        ${l.purpose?`<br>📌 用途：${l.purpose}`:''}
+        ${l.contact?`<br>📞 联系：${l.contact}`:''}
+        ${l.notes?`<br>📝 备注：${l.notes}`:''}
+        ${l.returnNotes?`<br>📝 归还备注：${l.returnNotes}`:''}
+      </div>
+    </div>`).join('');
+  document.getElementById('historyContent').innerHTML = `
+    <div style="font-size:13px;color:#666;margin-bottom:12px;">${d.brand} ${d.model} — 共 ${lends.length} 条记录</div>
+    ${html}`;
+  openModal('historyModal');
+}
+
+function deleteDevice(id) {
+  const d = data.devices.find(x => x.id === id);
+  if (!d) return;
+  if (!confirm(`确认删除「${d.brand} ${d.model}」？此操作不可撤销。`)) return;
+  data.devices = data.devices.filter(x => x.id !== id);
+  save();
+  render();
+  notify('设备已删除', 'error');
+}
+
+// ─── Import / Export ──────────────────────────────────────────────────────────
+function exportData() {
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `review-devices-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  notify('数据已导出 ✓', 'success');
+}
+
+function importData() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const imported = JSON.parse(ev.target.result);
+        if (!imported.devices) throw new Error('格式不正确');
+        if (!confirm(`导入将覆盖现有数据（${imported.devices.length} 台设备）。确认？`)) return;
+        data = imported;
+        save();
+        render();
+        notify(`导入成功：${data.devices.length} 台设备`, 'success');
+      } catch(err) {
+        notify('导入失败：' + err.message, 'error');
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+// ─── Notifications ────────────────────────────────────────────────────────────
+function notify(msg, type='success') {
+  const el = document.getElementById('notification');
+  el.textContent = msg;
+  el.className = `notification ${type} show`;
+  clearTimeout(el._timer);
+  el._timer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+load();
+render();
+</script>
+</body>
+</html>
