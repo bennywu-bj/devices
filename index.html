@@ -310,6 +310,29 @@
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
 
+    /* Sync status */
+    .sync-status {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 11px; color: var(--text4);
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .sync-status.syncing { color: var(--accent); border-color: var(--accent-border); }
+    .sync-status.error { color: #ff4d6d; border-color: #ff4d6d44; }
+    .sync-status.ok { color: #50fa7b; border-color: #50fa7b44; }
+    .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    .sync-dot.blink { animation: blink 1s ease-in-out infinite; }
+
+    /* Token setup modal */
+    .token-hint { font-size: 11px; color: var(--text4); margin-top: 5px; line-height: 1.6; }
+    .token-hint a { color: var(--accent); text-decoration: none; }
+    .token-hint a:hover { text-decoration: underline; }
+
     /* Notification */
     .notification {
       position: fixed; bottom: 20px; right: 20px;
@@ -362,6 +385,10 @@
       <div class="theme-dot dot-sunset"         onclick="setTheme('sunset')" title="落日"></div>
       <div class="theme-dot dot-forest"         onclick="setTheme('forest')" title="森林"></div>
       <div class="theme-dot dot-ocean"          onclick="setTheme('ocean')"  title="深海"></div>
+    </div>
+    <div class="sync-status" id="syncStatus" onclick="handleSyncClick()" title="点击配置同步">
+      <div class="sync-dot" id="syncDot"></div>
+      <span id="syncText">未配置</span>
     </div>
     <button class="btn btn-ghost btn-sm" onclick="exportData()">导出</button>
     <button class="btn btn-ghost btn-sm" onclick="importData()">导入</button>
@@ -495,6 +522,39 @@
   </div>
 </div>
 
+<!-- Token Config Modal -->
+<div class="modal-overlay" id="tokenModal">
+  <div class="modal" style="width:480px">
+    <h2>🔑 配置 GitHub 同步</h2>
+    <div class="form-group">
+      <label>GitHub Personal Access Token</label>
+      <input type="password" id="cfg-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" />
+      <p class="token-hint">
+        需要 <strong>repo</strong> 权限（Contents read &amp; write）。<br>
+        前往 <a href="https://github.com/settings/tokens/new?description=devices-manager&scopes=repo" target="_blank">GitHub → Settings → Tokens → New token</a> 创建。<br>
+        Token 仅保存在本地 localStorage，不会上传。
+      </p>
+    </div>
+    <div class="form-group">
+      <label>仓库（owner/repo）</label>
+      <input type="text" id="cfg-repo" placeholder="bennywu-bj/devices" />
+    </div>
+    <div class="form-group">
+      <label>文件路径</label>
+      <input type="text" id="cfg-path" placeholder="devices/devices.json" />
+    </div>
+    <div class="form-group">
+      <label>分支</label>
+      <input type="text" id="cfg-branch" placeholder="main" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger btn-sm" onclick="clearToken()" style="margin-right:auto">清除配置</button>
+      <button class="btn btn-ghost" onclick="closeModal('tokenModal')">取消</button>
+      <button class="btn btn-primary" onclick="saveToken()">保存并同步</button>
+    </div>
+  </div>
+</div>
+
 <!-- History Modal -->
 <div class="modal-overlay" id="historyModal">
   <div class="modal" style="width:540px">
@@ -509,7 +569,119 @@
 <div class="notification" id="notification"></div>
 
 <script>
-window.__INITIAL_DATA__ = {"devices": [{"id": "d001", "brand": "vivo", "model": "X100S", "variant": "", "arrivalDate": "", "serial": "", "source": "", "notes": "", "lends": [{"id": "l001", "borrower": "\u82cf\u626c", "lendDate": "2026-04-18", "dueDate": "", "purpose": "", "contact": "", "notes": "", "returnDate": null}], "createdAt": "2026-04-18T08:27:00.000Z"}, {"id": "d002", "brand": "vivo", "model": "X100 Ultra", "variant": "", "arrivalDate": "", "serial": "", "source": "", "notes": "", "lends": [{"id": "l002", "borrower": "\u82cf\u626c", "lendDate": "2026-04-18", "dueDate": "", "purpose": "", "contact": "", "notes": "", "returnDate": null}], "createdAt": "2026-04-18T08:27:00.000Z"}, {"id": "d003", "brand": "\u534e\u4e3a", "model": "MatePad mini", "variant": "", "arrivalDate": "", "serial": "", "source": "", "notes": "", "lends": [{"id": "l003", "borrower": "\u82cf\u626c", "lendDate": "2026-04-18", "dueDate": "", "purpose": "", "contact": "", "notes": "", "returnDate": null}], "createdAt": "2026-04-18T08:27:00.000Z"}, {"id": "d004", "brand": "Apple", "model": "MacBook Pro M1", "variant": "", "arrivalDate": "", "serial": "", "source": "", "notes": "", "lends": [{"id": "l004", "borrower": "\u82cf\u626c", "lendDate": "2026-04-18", "dueDate": "", "purpose": "", "contact": "", "notes": "", "returnDate": null}], "createdAt": "2026-04-18T08:27:00.000Z"}, {"id": "d005", "brand": "\u5c0f\u7c73", "model": "17 Pro", "variant": "", "arrivalDate": "", "serial": "", "source": "", "notes": "", "lends": [{"id": "l005", "borrower": "\u8d75\u9633", "lendDate": "2026-04-18", "dueDate": "", "purpose": "", "contact": "", "notes": "", "returnDate": null}], "createdAt": "2026-04-18T08:27:00.000Z"}, {"id": "d006", "brand": "vivo", "model": "X300 Ultra", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026\u5e744\u6708\u8bc4\u6d4b\u673a", "lends": [], "createdAt": "2026-04-18T08:30:00.000Z"}, {"id": "d007", "brand": "vivo", "model": "X300S", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026\u5e744\u6708\u8bc4\u6d4b\u673a", "lends": [], "createdAt": "2026-04-18T08:30:00.000Z"}, {"id": "d008", "brand": "OPPO", "model": "Find X9 Ultra", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026\u5e744\u6708\u8bc4\u6d4b\u673a", "lends": [], "createdAt": "2026-04-18T08:30:00.000Z"}, {"id": "d009", "brand": "OPPO", "model": "Find X9S", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026\u5e744\u6708\u8bc4\u6d4b\u673a", "lends": [], "createdAt": "2026-04-18T08:30:00.000Z"}, {"id": "d010", "brand": "Redmi", "model": "K90 Max", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026\u5e744\u6708\u8bc4\u6d4b\u673a", "lends": [], "createdAt": "2026-04-18T08:30:00.000Z"}, {"id": "d011", "brand": "Redmi", "model": "KPad 2", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026\u5e744\u6708\u8bc4\u6d4b\u673a", "lends": [], "createdAt": "2026-04-18T08:30:00.000Z"}, {"id": "d012", "brand": "\u534e\u4e3a", "model": "\u754c\u4eab 90 Pro Max", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026\u5e744\u6708\u8bc4\u6d4b\u673a", "lends": [], "createdAt": "2026-04-18T08:30:00.000Z"}, {"id": "d013", "brand": "\u5c0f\u7c73", "model": "17 Ultra", "variant": "", "arrivalDate": "2026-01-01", "serial": "", "source": "", "notes": "2026\u5e741\u6708\u8bc4\u6d4b\u673a", "lends": [], "createdAt": "2026-04-18T09:07:00.000Z"}, {"id": "d014", "brand": "\u5c0f\u7c73", "model": "17 Ultra \u5f95\u5361\u7248", "variant": "", "arrivalDate": "2026-01-01", "serial": "", "source": "", "notes": "2026\u5e741\u6708\u8bc4\u6d4b\u673a", "lends": [], "createdAt": "2026-04-18T09:07:00.000Z"}, {"id": "d015", "brand": "\u8363\u8000", "model": "Magic V6", "variant": "", "arrivalDate": "2026-03-01", "serial": "", "source": "", "notes": "2026\u5e743\u6708\u8bc4\u6d4b\u673a", "lends": [{"id": "l006", "borrower": "\u738b\u8fea", "lendDate": "2026-04-18", "dueDate": "", "purpose": "", "contact": "", "notes": "", "returnDate": null}], "createdAt": "2026-04-18T09:07:00.000Z"}, {"id": "d016", "brand": "Apple", "model": "MacBook Pro M5", "variant": "", "arrivalDate": "2026-03-01", "serial": "", "source": "", "notes": "2026\u5e743\u6708\u8bc4\u6d4b\u673a", "lends": [], "createdAt": "2026-04-18T09:12:00.000Z"}, {"id": "d017", "brand": "Apple", "model": "MacBook Pro M5 Max", "variant": "", "arrivalDate": "2026-03-01", "serial": "", "source": "", "notes": "2026\u5e743\u6708\u8bc4\u6d4b\u673a", "lends": [], "createdAt": "2026-04-18T09:12:00.000Z"}, {"id": "d018", "brand": "Apple", "model": "MacBook Neo", "variant": "", "arrivalDate": "2026-03-01", "serial": "", "source": "", "notes": "2026\u5e743\u6708\u8bc4\u6d4b\u673a", "lends": [], "createdAt": "2026-04-18T09:12:00.000Z"}, {"id": "d019", "brand": "Apple", "model": "MacBook Air M5", "variant": "", "arrivalDate": "2026-03-01", "serial": "", "source": "", "notes": "2026\u5e743\u6708\u8bc4\u6d4b\u673a", "lends": [], "createdAt": "2026-04-18T09:12:00.000Z"}, {"id": "d020", "brand": "Apple", "model": "iPad mini \u7b2c\u516d\u4ee3", "variant": "", "arrivalDate": "2026-03-01", "serial": "", "source": "", "notes": "2026\u5e743\u6708\u8bc4\u6d4b\u673a", "lends": [{"id": "l007", "borrower": "\u6653\u9759", "lendDate": "2026-04-18", "dueDate": "", "purpose": "", "contact": "", "notes": "", "returnDate": null}], "createdAt": "2026-04-18T09:12:00.000Z"}, {"id": "d021", "brand": "vivo", "model": "Y600 Pro", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026\u5e744\u6708\u8bc4\u6d4b\u673a", "lends": [], "createdAt": "2026-04-18T09:22:00.000Z"}, {"id": "d022", "brand": "DJI", "model": "Pocket 4", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026\u5e744\u6708\u8bc4\u6d4b\u673a", "lends": [], "createdAt": "2026-04-18T09:25:00.000Z"}, {"id": "d023", "brand": "DJI", "model": "Mic Mini 2", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026\u5e744\u6708\u8bc4\u6d4b\u673a", "lends": [], "createdAt": "2026-04-18T09:25:00.000Z"}, {"id": "d024", "brand": "DJI", "model": "Avata 360", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026\u5e744\u6708\u8bc4\u6d4b\u673a", "lends": [], "createdAt": "2026-04-18T09:25:00.000Z"}, {"id": "d025", "brand": "DJI", "model": "Lito X1", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026\u5e744\u6708\u8bc4\u6d4b\u673a", "lends": [], "createdAt": "2026-04-18T09:25:00.000Z"}, {"id": "d026", "brand": "DJI", "model": "Lito 1", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026\u5e744\u6708\u8bc4\u6d4b\u673a", "lends": [], "createdAt": "2026-04-18T09:25:00.000Z"}], "lastUpdated": "2026-04-18"};
+window.__INITIAL_DATA__ = {"devices": [{"id": "d001", "brand": "vivo", "model": "X100S", "variant": "", "arrivalDate": "", "serial": "", "source": "", "notes": "", "lends": [{"id": "l001", "borrower": "苏扬", "lendDate": "2026-04-18", "dueDate": "", "purpose": "", "contact": "", "notes": "", "returnDate": null}], "createdAt": "2026-04-18T08:27:00.000Z"}, {"id": "d002", "brand": "vivo", "model": "X100 Ultra", "variant": "", "arrivalDate": "", "serial": "", "source": "", "notes": "", "lends": [{"id": "l002", "borrower": "苏扬", "lendDate": "2026-04-18", "dueDate": "", "purpose": "", "contact": "", "notes": "", "returnDate": null}], "createdAt": "2026-04-18T08:27:00.000Z"}, {"id": "d003", "brand": "华为", "model": "MatePad mini", "variant": "", "arrivalDate": "", "serial": "", "source": "", "notes": "", "lends": [{"id": "l003", "borrower": "苏扬", "lendDate": "2026-04-18", "dueDate": "", "purpose": "", "contact": "", "notes": "", "returnDate": null}], "createdAt": "2026-04-18T08:27:00.000Z"}, {"id": "d004", "brand": "Apple", "model": "MacBook Pro M1", "variant": "", "arrivalDate": "", "serial": "", "source": "", "notes": "", "lends": [{"id": "l004", "borrower": "苏扬", "lendDate": "2026-04-18", "dueDate": "", "purpose": "", "contact": "", "notes": "", "returnDate": null}], "createdAt": "2026-04-18T08:27:00.000Z"}, {"id": "d005", "brand": "小米", "model": "17 Pro", "variant": "", "arrivalDate": "", "serial": "", "source": "", "notes": "", "lends": [{"id": "l005", "borrower": "赵阳", "lendDate": "2026-04-18", "dueDate": "", "purpose": "", "contact": "", "notes": "", "returnDate": null}], "createdAt": "2026-04-18T08:27:00.000Z"}, {"id": "d006", "brand": "vivo", "model": "X300 Ultra", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T08:30:00.000Z"}, {"id": "d007", "brand": "vivo", "model": "X300S", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T08:30:00.000Z"}, {"id": "d008", "brand": "OPPO", "model": "Find X9 Ultra", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T08:30:00.000Z"}, {"id": "d009", "brand": "OPPO", "model": "Find X9S", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T08:30:00.000Z"}, {"id": "d010", "brand": "Redmi", "model": "K90 Max", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T08:30:00.000Z"}, {"id": "d011", "brand": "Redmi", "model": "KPad 2", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T08:30:00.000Z"}, {"id": "d012", "brand": "华为", "model": "畅享 90 Pro Max", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T08:30:00.000Z"}, {"id": "d013", "brand": "小米", "model": "17 Ultra", "variant": "", "arrivalDate": "2026-01-01", "serial": "", "source": "", "notes": "2026年1月评测机", "lends": [], "createdAt": "2026-04-18T09:07:00.000Z"}, {"id": "d014", "brand": "小米", "model": "17 Ultra 徕卡版", "variant": "", "arrivalDate": "2026-01-01", "serial": "", "source": "", "notes": "2026年1月评测机", "lends": [], "createdAt": "2026-04-18T09:07:00.000Z"}, {"id": "d015", "brand": "荣耀", "model": "Magic V6", "variant": "", "arrivalDate": "2026-03-01", "serial": "", "source": "", "notes": "2026年3月评测机", "lends": [{"id": "l006", "borrower": "王迪", "lendDate": "2026-04-18", "dueDate": "", "purpose": "", "contact": "", "notes": "", "returnDate": null}], "createdAt": "2026-04-18T09:07:00.000Z"}, {"id": "d016", "brand": "Apple", "model": "MacBook Pro M5", "variant": "", "arrivalDate": "2026-03-01", "serial": "", "source": "", "notes": "2026年3月评测机", "lends": [], "createdAt": "2026-04-18T09:12:00.000Z"}, {"id": "d017", "brand": "Apple", "model": "MacBook Pro M5 Max", "variant": "", "arrivalDate": "2026-03-01", "serial": "", "source": "", "notes": "2026年3月评测机", "lends": [], "createdAt": "2026-04-18T09:12:00.000Z"}, {"id": "d018", "brand": "Apple", "model": "MacBook Neo", "variant": "", "arrivalDate": "2026-03-01", "serial": "", "source": "", "notes": "2026年3月评测机", "lends": [], "createdAt": "2026-04-18T09:12:00.000Z"}, {"id": "d019", "brand": "Apple", "model": "MacBook Air M5", "variant": "", "arrivalDate": "2026-03-01", "serial": "", "source": "", "notes": "2026年3月评测机", "lends": [], "createdAt": "2026-04-18T09:12:00.000Z"}, {"id": "d020", "brand": "Apple", "model": "iPad mini 第六代", "variant": "", "arrivalDate": "2026-03-01", "serial": "", "source": "", "notes": "2026年3月评测机", "lends": [{"id": "l007", "borrower": "晓静", "lendDate": "2026-04-18", "dueDate": "", "purpose": "", "contact": "", "notes": "", "returnDate": null}], "createdAt": "2026-04-18T09:12:00.000Z"}, {"id": "d021", "brand": "vivo", "model": "Y600 Pro", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T09:22:00.000Z"}, {"id": "d022", "brand": "DJI", "model": "Pocket 4", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T09:25:00.000Z"}, {"id": "d023", "brand": "DJI", "model": "Mic Mini 2", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T09:25:00.000Z"}, {"id": "d024", "brand": "DJI", "model": "Avata 360", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T09:25:00.000Z"}, {"id": "d025", "brand": "DJI", "model": "Lito X1", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T09:25:00.000Z"}, {"id": "d026", "brand": "DJI", "model": "Lito 1", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T09:25:00.000Z"}, {"id": "d027", "brand": "华为", "model": "Pura X Max", "variant": "", "arrivalDate": "2026-04-19", "serial": "", "source": "", "notes": "2026年4月19日入库", "lends": [], "createdAt": "2026-04-19T08:53:00.000Z"}, {"id": "d028", "brand": "华为", "model": "Pura90 Pro", "variant": "", "arrivalDate": "2026-04-19", "serial": "", "source": "", "notes": "2026年4月19日入库", "lends": [], "createdAt": "2026-04-19T08:53:00.000Z"}, {"id": "d029", "brand": "华为", "model": "Pura90 Pro Max", "variant": "", "arrivalDate": "2026-04-19", "serial": "", "source": "", "notes": "2026年4月19日入库", "lends": [], "createdAt": "2026-04-19T08:53:00.000Z"}], "lastUpdated": "2026-04-20"};
+
+// ─── GitHub Sync ─────────────────────────────────────────────────────────────
+const GH_TOKEN_KEY  = 'devmgr_gh_token';
+const GH_REPO_KEY   = 'devmgr_gh_repo';
+const GH_PATH_KEY   = 'devmgr_gh_path';
+const GH_BRANCH_KEY = 'devmgr_gh_branch';
+let   ghSha = null; // current file SHA (needed for GitHub API updates)
+
+function ghConfig() {
+  return {
+    token:  localStorage.getItem(GH_TOKEN_KEY)  || '',
+    repo:   localStorage.getItem(GH_REPO_KEY)   || 'bennywu-bj/devices',
+    path:   localStorage.getItem(GH_PATH_KEY)   || 'devices/devices.json',
+    branch: localStorage.getItem(GH_BRANCH_KEY) || 'main',
+  };
+}
+
+function setSyncUI(state, text) {
+  const el = document.getElementById('syncStatus');
+  const dot = document.getElementById('syncDot');
+  const txt = document.getElementById('syncText');
+  el.className = 'sync-status ' + (state || '');
+  dot.className = 'sync-dot' + (state === 'syncing' ? ' blink' : '');
+  txt.textContent = text;
+}
+
+async function fetchRemote() {
+  const { token, repo, path, branch } = ghConfig();
+  if (!token) return null;
+  setSyncUI('syncing', '读取中…');
+  try {
+    const res = await fetch(
+      `https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}&t=${Date.now()}`,
+      { headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' } }
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    ghSha = json.sha;
+    const decoded = JSON.parse(atob(json.content.replace(/\n/g, '')));
+    setSyncUI('ok', '已同步');
+    return decoded;
+  } catch (e) {
+    setSyncUI('error', '读取失败');
+    console.error('fetchRemote', e);
+    return null;
+  }
+}
+
+async function pushRemote(payload) {
+  const { token, repo, path, branch } = ghConfig();
+  if (!token) return false;
+  setSyncUI('syncing', '保存中…');
+  try {
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
+    const body = { message: `update devices ${new Date().toISOString().slice(0,10)}`, content, branch };
+    if (ghSha) body.sha = ghSha;
+    const res = await fetch(
+      `https://api.github.com/repos/${repo}/contents/${path}`,
+      { method: 'PUT', headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    ghSha = json.content.sha;
+    setSyncUI('ok', '已保存');
+    return true;
+  } catch (e) {
+    setSyncUI('error', '保存失败');
+    console.error('pushRemote', e);
+    return false;
+  }
+}
+
+function handleSyncClick() {
+  const cfg = ghConfig();
+  document.getElementById('cfg-token').value  = localStorage.getItem(GH_TOKEN_KEY) || '';
+  document.getElementById('cfg-repo').value   = cfg.repo;
+  document.getElementById('cfg-path').value   = cfg.path;
+  document.getElementById('cfg-branch').value = cfg.branch;
+  openModal('tokenModal');
+}
+
+async function saveToken() {
+  const token  = document.getElementById('cfg-token').value.trim();
+  const repo   = document.getElementById('cfg-repo').value.trim()   || 'bennywu-bj/devices';
+  const path   = document.getElementById('cfg-path').value.trim()   || 'devices/devices.json';
+  const branch = document.getElementById('cfg-branch').value.trim() || 'main';
+  localStorage.setItem(GH_TOKEN_KEY,  token);
+  localStorage.setItem(GH_REPO_KEY,   repo);
+  localStorage.setItem(GH_PATH_KEY,   path);
+  localStorage.setItem(GH_BRANCH_KEY, branch);
+  closeModal('tokenModal');
+  if (token) {
+    const remote = await fetchRemote();
+    if (remote) {
+      data = remote;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      render();
+      notify('同步成功，数据已更新 ✓', 'success');
+    } else {
+      notify('Token 配置已保存，但读取失败，请检查权限', 'error');
+    }
+  }
+}
+
+function clearToken() {
+  if (!confirm('清除 GitHub 配置？数据仍保留在本地。')) return;
+  [GH_TOKEN_KEY, GH_REPO_KEY, GH_PATH_KEY, GH_BRANCH_KEY].forEach(k => localStorage.removeItem(k));
+  ghSha = null;
+  setSyncUI('', '未配置');
+  closeModal('tokenModal');
+  notify('配置已清除', 'error');
+}
 
 // ─── Theme ────────────────────────────────────────────────────────────────────
 const THEMES = ['dark','light','sunset','forest','ocean'];
@@ -531,14 +703,34 @@ let currentFilter = 'all', currentSearch = '', currentView = 'brand';
 let editingId = null, lendingId = null, returningId = null;
 
 function load() {
+  // 先从 localStorage 加载（离线降级）
   try { const r = localStorage.getItem(STORAGE_KEY); if (r) data = JSON.parse(r); } catch(e) {}
   if (!data.devices.length) {
-    try { const e = window.__INITIAL_DATA__; if (e) { data = e; save(); } } catch(e) {}
+    try { const e = window.__INITIAL_DATA__; if (e) { data = e; } } catch(e) {}
+  }
+  // 检查是否配置了 token
+  if (!localStorage.getItem(GH_TOKEN_KEY)) {
+    setSyncUI('', '未配置');
   }
 }
-function save() {
+async function loadWithRemote() {
+  load();
+  render(); // 先显本地数据，不让用户等待
+  if (localStorage.getItem(GH_TOKEN_KEY)) {
+    const remote = await fetchRemote();
+    if (remote) {
+      data = remote;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      render();
+    }
+  }
+}
+async function save() {
   data.lastUpdated = new Date().toISOString().slice(0,10);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  if (localStorage.getItem(GH_TOKEN_KEY)) {
+    await pushRemote(data);
+  }
 }
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 
@@ -735,13 +927,14 @@ function openEditModal(id) {
   document.getElementById('f-arrivalDate').value=d.arrivalDate||'';
   openModal('deviceModal');
 }
-function saveDevice() {
+async function saveDevice() {
   const brand=document.getElementById('f-brand').value.trim(), model=document.getElementById('f-model').value.trim();
   if (!model) { notify('型号不能为空','error'); return; }
   const fields = {brand,model,variant:document.getElementById('f-variant').value.trim(),arrivalDate:document.getElementById('f-arrivalDate').value,serial:document.getElementById('f-serial').value.trim(),source:document.getElementById('f-source').value.trim(),notes:document.getElementById('f-notes').value.trim()};
   if (editingId) { Object.assign(data.devices.find(x=>x.id===editingId), fields); }
   else { data.devices.push({id:uid(),...fields,lends:[],createdAt:new Date().toISOString()}); }
-  save(); render(); closeModal('deviceModal');
+  closeModal('deviceModal'); render();
+  await save();
   notify(editingId?'设备信息已更新':'设备已添加 ✓','success');
 }
 function openLendModal(id) {
@@ -751,13 +944,15 @@ function openLendModal(id) {
   document.getElementById('l-dueDate').value='';
   openModal('lendModal');
 }
-function saveLend() {
+async function saveLend() {
   const borrower=document.getElementById('l-borrower').value.trim();
   if (!borrower) { notify('借用人不能为空','error'); return; }
   const d=data.devices.find(x=>x.id===lendingId); if(!d) return;
   if (!d.lends) d.lends=[];
   d.lends.push({id:uid(),borrower,lendDate:document.getElementById('l-lendDate').value,dueDate:document.getElementById('l-dueDate').value,purpose:document.getElementById('l-purpose').value.trim(),contact:document.getElementById('l-contact').value.trim(),notes:document.getElementById('l-notes').value.trim(),returnDate:null});
-  save(); render(); closeModal('lendModal'); notify(`已借出给 ${borrower} ✓`,'success');
+  closeModal('lendModal'); render();
+  await save();
+  notify(`已借出给 ${borrower} ✓`,'success');
 }
 function openReturnModal(id) {
   returningId=id;
@@ -766,14 +961,16 @@ function openReturnModal(id) {
   document.getElementById('r-notes').value='';
   openModal('returnModal');
 }
-function saveReturn() {
+async function saveReturn() {
   const d=data.devices.find(x=>x.id===returningId); if(!d) return;
   const l=d.lends&&d.lends[d.lends.length-1];
   if (!l||l.returnDate) { notify('没有未归还的借出记录','error'); return; }
   l.returnDate=document.getElementById('r-returnDate').value;
   l.condition=document.getElementById('r-condition').value;
   l.returnNotes=document.getElementById('r-notes').value.trim();
-  save(); render(); closeModal('returnModal'); notify('归还记录已保存 ✓','success');
+  closeModal('returnModal'); render();
+  await save();
+  notify('归还记录已保存 ✓','success');
 }
 function openHistory(id) {
   const d=data.devices.find(x=>x.id===id); if(!d) return;
@@ -781,11 +978,13 @@ function openHistory(id) {
   document.getElementById('historyContent').innerHTML = `<div style="font-size:12px;color:var(--text4);margin-bottom:10px">${d.brand} ${d.model} — 共 ${lends.length} 条记录</div>`+(lends.length===0?'<p style="color:var(--text4);text-align:center;padding:20px">暂无记录</p>':lends.slice().reverse().map(l=>`<div style="background:var(--bg4);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-weight:700;color:var(--text)">${l.borrower}</span><span style="font-size:11px;color:${l.returnDate?'#50fa7b':'#ffb86c'}">${l.returnDate?'已归还':'借出中'}</span></div><div style="font-size:11px;color:var(--text3);line-height:1.9">📤 借出：${l.lendDate}${l.dueDate?' ⏰ 预还：'+l.dueDate:''}${l.returnDate?`<br>✅ 归还：${l.returnDate}${l.condition?' ('+l.condition+')':''}`:''}${l.purpose?`<br>📌 ${l.purpose}`:''}${l.contact?`<br>📞 ${l.contact}`:''}${l.notes?`<br>📝 ${l.notes}`:''}${l.returnNotes?`<br>📝 归还备注：${l.returnNotes}`:''}</div></div>`).join(''));
   openModal('historyModal');
 }
-function deleteDevice(id) {
+async function deleteDevice(id) {
   const d=data.devices.find(x=>x.id===id); if(!d) return;
   if (!confirm(`确认删除「${d.brand} ${d.model}」？`)) return;
   data.devices=data.devices.filter(x=>x.id!==id);
-  save(); render(); notify('设备已删除','error');
+  render();
+  await save();
+  notify('设备已删除','error');
 }
 function exportData() {
   const a=document.createElement('a');
@@ -808,7 +1007,7 @@ function notify(msg,type='success') {
   clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),3000);
 }
 
-load(); render();
+loadWithRemote();
 </script>
 </body>
 </html>
