@@ -601,14 +601,17 @@ async function fetchRemote() {
   if (!token) return null;
   setSyncUI('syncing', '读取中…');
   try {
-    const res = await fetch(
-      `https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}&t=${Date.now()}`,
+    // 先用 raw URL 读内容（无 CORS 限制），再用 API 拿 SHA
+    const rawUrl = `https://raw.githubusercontent.com/${repo}/${branch}/${path}?t=${Date.now()}`;
+    const rawRes = await fetch(rawUrl);
+    if (!rawRes.ok) throw new Error(`raw HTTP ${rawRes.status}`);
+    const decoded = await rawRes.json();
+    // 获取 SHA（写入时需要）
+    const apiRes = await fetch(
+      `https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}`,
       { headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' } }
     );
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const json = await res.json();
-    ghSha = json.sha;
-    const decoded = JSON.parse(atob(json.content.replace(/\n/g, '')));
+    if (apiRes.ok) { const meta = await apiRes.json(); ghSha = meta.sha; }
     setSyncUI('ok', '已同步');
     return decoded;
   } catch (e) {
