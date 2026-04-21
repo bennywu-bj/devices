@@ -654,6 +654,39 @@ function getBrandInitial(brand) {
   return b.slice(0,2).toUpperCase();
 }
 
+const BRAND_LOGOS = {
+  'Apple':  'https://logo.clearbit.com/apple.com',
+  'DJI':    'https://logo.clearbit.com/dji.com',
+  'OPPO':   'https://logo.clearbit.com/oppo.com',
+  'Redmi':  'https://logo.clearbit.com/mi.com',
+  'vivo':   'https://logo.clearbit.com/vivo.com',
+  '华为':   'https://logo.clearbit.com/huawei.com',
+  '小米':   'https://logo.clearbit.com/mi.com',
+  '荣耀':   'https://logo.clearbit.com/hihonor.com',
+  'Samsung':'https://logo.clearbit.com/samsung.com',
+  '三星':   'https://logo.clearbit.com/samsung.com',
+  '一加':   'https://logo.clearbit.com/oneplus.com',
+  'Google': 'https://logo.clearbit.com/google.com',
+  '魅族':   'https://logo.clearbit.com/meizu.com',
+  '索尼':   'https://logo.clearbit.com/sony.com',
+  'Sony':   'https://logo.clearbit.com/sony.com',
+};
+
+function getBrandLogo(brand) {
+  return BRAND_LOGOS[brand.trim()] || null;
+}
+
+function renderBrandIcon(brand, color, initial) {
+  const logo = getBrandLogo(brand);
+  if (logo) {
+    return `<img src="${logo}" alt="${brand}"
+      style="width:22px;height:22px;object-fit:contain;border-radius:4px;"
+      onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;">${initial}</span>`;
+  }
+  return initial;
+}
+
 // ─── Status ───────────────────────────────────────────────────────────────────
 function getStatus(d) {
   if (!d.lends || !d.lends.length) return 'in';
@@ -721,7 +754,7 @@ function renderBrandView() {
     const color = getBrandColor(brand), initial = getBrandInitial(brand);
     return `<div class="brand-section">
       <div class="brand-header" onclick="toggleBrand('${encodeURIComponent(brand)}')">
-        <div class="brand-logo" style="background:${color}25;color:${color};border:1px solid ${color}40">${initial}</div>
+        <div class="brand-logo" style="background:${color}15;color:${color};border:1px solid ${color}30;display:flex;align-items:center;justify-content:center;">${renderBrandIcon(brand, color, initial)}</div>
         <span class="brand-name">${brand}</span>
         <span class="brand-count">${brands[brand].length} 台</span>
         <span class="brand-toggle" id="toggle-${encodeURIComponent(brand)}">▾</span>
