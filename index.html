@@ -390,6 +390,7 @@
       <div class="sync-dot" id="syncDot"></div>
       <span id="syncText">未配置</span>
     </div>
+    <button class="btn btn-ghost btn-sm" onclick="forceRefresh()" title="从服务器重新拉取最新数据">🔄 刷新</button>
     <button class="btn btn-ghost btn-sm" onclick="exportData()">导出</button>
     <button class="btn btn-ghost btn-sm" onclick="importData()">导入</button>
     <button class="btn btn-primary btn-sm" onclick="openAddModal()">＋ 添加</button>
@@ -581,6 +582,17 @@ async function pushRemote(payload) {
     setSyncUI('error', '保存失败');
     console.error('pushRemote', e);
     return false;
+  }
+}
+
+async function forceRefresh() {
+  localStorage.removeItem(STORAGE_KEY);
+  const remote = await fetchRemote();
+  if (remote) {
+    data = remote;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    render();
+    notify('数据已刷新 ✓', 'success');
   }
 }
 
