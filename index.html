@@ -522,38 +522,6 @@
   </div>
 </div>
 
-<!-- Token Config Modal -->
-<div class="modal-overlay" id="tokenModal">
-  <div class="modal" style="width:480px">
-    <h2>🔑 配置 GitHub 同步</h2>
-    <div class="form-group">
-      <label>GitHub Personal Access Token</label>
-      <input type="password" id="cfg-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" />
-      <p class="token-hint">
-        需要 <strong>repo</strong> 权限（Contents read &amp; write）。<br>
-        前往 <a href="https://github.com/settings/tokens/new?description=devices-manager&scopes=repo" target="_blank">GitHub → Settings → Tokens → New token</a> 创建。<br>
-        Token 仅保存在本地 localStorage，不会上传。
-      </p>
-    </div>
-    <div class="form-group">
-      <label>仓库（owner/repo）</label>
-      <input type="text" id="cfg-repo" placeholder="bennywu-bj/devices" />
-    </div>
-    <div class="form-group">
-      <label>文件路径</label>
-      <input type="text" id="cfg-path" placeholder="devices/devices.json" />
-    </div>
-    <div class="form-group">
-      <label>分支</label>
-      <input type="text" id="cfg-branch" placeholder="main" />
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-danger btn-sm" onclick="clearToken()" style="margin-right:auto">清除配置</button>
-      <button class="btn btn-ghost" onclick="closeModal('tokenModal')">取消</button>
-      <button class="btn btn-primary" onclick="saveToken()">保存并同步</button>
-    </div>
-  </div>
-</div>
 
 <!-- History Modal -->
 <div class="modal-overlay" id="historyModal">
@@ -571,21 +539,8 @@
 <script>
 window.__INITIAL_DATA__ = {"devices": [{"id": "d001", "brand": "vivo", "model": "X100S", "variant": "", "arrivalDate": "", "serial": "", "source": "", "notes": "", "lends": [{"id": "l001", "borrower": "苏扬", "lendDate": "2026-04-18", "dueDate": "", "purpose": "", "contact": "", "notes": "", "returnDate": null}], "createdAt": "2026-04-18T08:27:00.000Z"}, {"id": "d002", "brand": "vivo", "model": "X100 Ultra", "variant": "", "arrivalDate": "", "serial": "", "source": "", "notes": "", "lends": [{"id": "l002", "borrower": "苏扬", "lendDate": "2026-04-18", "dueDate": "", "purpose": "", "contact": "", "notes": "", "returnDate": null}], "createdAt": "2026-04-18T08:27:00.000Z"}, {"id": "d003", "brand": "华为", "model": "MatePad mini", "variant": "", "arrivalDate": "", "serial": "", "source": "", "notes": "", "lends": [{"id": "l003", "borrower": "苏扬", "lendDate": "2026-04-18", "dueDate": "", "purpose": "", "contact": "", "notes": "", "returnDate": null}], "createdAt": "2026-04-18T08:27:00.000Z"}, {"id": "d004", "brand": "Apple", "model": "MacBook Pro M1", "variant": "", "arrivalDate": "", "serial": "", "source": "", "notes": "", "lends": [{"id": "l004", "borrower": "苏扬", "lendDate": "2026-04-18", "dueDate": "", "purpose": "", "contact": "", "notes": "", "returnDate": null}], "createdAt": "2026-04-18T08:27:00.000Z"}, {"id": "d005", "brand": "小米", "model": "17 Pro", "variant": "", "arrivalDate": "", "serial": "", "source": "", "notes": "", "lends": [{"id": "l005", "borrower": "赵阳", "lendDate": "2026-04-18", "dueDate": "", "purpose": "", "contact": "", "notes": "", "returnDate": null}], "createdAt": "2026-04-18T08:27:00.000Z"}, {"id": "d006", "brand": "vivo", "model": "X300 Ultra", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T08:30:00.000Z"}, {"id": "d007", "brand": "vivo", "model": "X300S", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T08:30:00.000Z"}, {"id": "d008", "brand": "OPPO", "model": "Find X9 Ultra", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T08:30:00.000Z"}, {"id": "d009", "brand": "OPPO", "model": "Find X9S", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T08:30:00.000Z"}, {"id": "d010", "brand": "Redmi", "model": "K90 Max", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T08:30:00.000Z"}, {"id": "d011", "brand": "Redmi", "model": "KPad 2", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T08:30:00.000Z"}, {"id": "d012", "brand": "华为", "model": "畅享 90 Pro Max", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T08:30:00.000Z"}, {"id": "d013", "brand": "小米", "model": "17 Ultra", "variant": "", "arrivalDate": "2026-01-01", "serial": "", "source": "", "notes": "2026年1月评测机", "lends": [], "createdAt": "2026-04-18T09:07:00.000Z"}, {"id": "d014", "brand": "小米", "model": "17 Ultra 徕卡版", "variant": "", "arrivalDate": "2026-01-01", "serial": "", "source": "", "notes": "2026年1月评测机", "lends": [], "createdAt": "2026-04-18T09:07:00.000Z"}, {"id": "d015", "brand": "荣耀", "model": "Magic V6", "variant": "", "arrivalDate": "2026-03-01", "serial": "", "source": "", "notes": "2026年3月评测机", "lends": [{"id": "l006", "borrower": "王迪", "lendDate": "2026-04-18", "dueDate": "", "purpose": "", "contact": "", "notes": "", "returnDate": null}], "createdAt": "2026-04-18T09:07:00.000Z"}, {"id": "d016", "brand": "Apple", "model": "MacBook Pro M5", "variant": "", "arrivalDate": "2026-03-01", "serial": "", "source": "", "notes": "2026年3月评测机", "lends": [], "createdAt": "2026-04-18T09:12:00.000Z"}, {"id": "d017", "brand": "Apple", "model": "MacBook Pro M5 Max", "variant": "", "arrivalDate": "2026-03-01", "serial": "", "source": "", "notes": "2026年3月评测机", "lends": [], "createdAt": "2026-04-18T09:12:00.000Z"}, {"id": "d018", "brand": "Apple", "model": "MacBook Neo", "variant": "", "arrivalDate": "2026-03-01", "serial": "", "source": "", "notes": "2026年3月评测机", "lends": [], "createdAt": "2026-04-18T09:12:00.000Z"}, {"id": "d019", "brand": "Apple", "model": "MacBook Air M5", "variant": "", "arrivalDate": "2026-03-01", "serial": "", "source": "", "notes": "2026年3月评测机", "lends": [], "createdAt": "2026-04-18T09:12:00.000Z"}, {"id": "d020", "brand": "Apple", "model": "iPad mini 第六代", "variant": "", "arrivalDate": "2026-03-01", "serial": "", "source": "", "notes": "2026年3月评测机", "lends": [{"id": "l007", "borrower": "晓静", "lendDate": "2026-04-18", "dueDate": "", "purpose": "", "contact": "", "notes": "", "returnDate": null}], "createdAt": "2026-04-18T09:12:00.000Z"}, {"id": "d021", "brand": "vivo", "model": "Y600 Pro", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T09:22:00.000Z"}, {"id": "d022", "brand": "DJI", "model": "Pocket 4", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T09:25:00.000Z"}, {"id": "d023", "brand": "DJI", "model": "Mic Mini 2", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T09:25:00.000Z"}, {"id": "d024", "brand": "DJI", "model": "Avata 360", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T09:25:00.000Z"}, {"id": "d025", "brand": "DJI", "model": "Lito X1", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T09:25:00.000Z"}, {"id": "d026", "brand": "DJI", "model": "Lito 1", "variant": "", "arrivalDate": "2026-04-01", "serial": "", "source": "", "notes": "2026年4月评测机", "lends": [], "createdAt": "2026-04-18T09:25:00.000Z"}, {"id": "d027", "brand": "华为", "model": "Pura X Max", "variant": "", "arrivalDate": "2026-04-19", "serial": "", "source": "", "notes": "2026年4月19日入库", "lends": [], "createdAt": "2026-04-19T08:53:00.000Z"}, {"id": "d028", "brand": "华为", "model": "Pura90 Pro", "variant": "", "arrivalDate": "2026-04-19", "serial": "", "source": "", "notes": "2026年4月19日入库", "lends": [], "createdAt": "2026-04-19T08:53:00.000Z"}, {"id": "d029", "brand": "华为", "model": "Pura90 Pro Max", "variant": "", "arrivalDate": "2026-04-19", "serial": "", "source": "", "notes": "2026年4月19日入库", "lends": [], "createdAt": "2026-04-19T08:53:00.000Z"}], "lastUpdated": "2026-04-20"};
 
-// ─── GitHub Sync ─────────────────────────────────────────────────────────────
-const GH_TOKEN_KEY  = 'devmgr_gh_token';
-const GH_REPO_KEY   = 'devmgr_gh_repo';
-const GH_PATH_KEY   = 'devmgr_gh_path';
-const GH_BRANCH_KEY = 'devmgr_gh_branch';
-let   ghSha = null; // current file SHA (needed for GitHub API updates)
-
-function ghConfig() {
-  return {
-    token:  localStorage.getItem(GH_TOKEN_KEY)  || '',
-    repo:   localStorage.getItem(GH_REPO_KEY)   || 'bennywu-bj/devices',
-    path:   localStorage.getItem(GH_PATH_KEY)   || 'devices/devices.json',
-    branch: localStorage.getItem(GH_BRANCH_KEY) || 'main',
-  };
-}
+// ─── Server Sync ─────────────────────────────────────────────────────────────────────────
+const API_URL = 'http://62.234.73.206:3000/api/devices';
 
 function setSyncUI(state, text) {
   const el = document.getElementById('syncStatus');
@@ -597,24 +552,14 @@ function setSyncUI(state, text) {
 }
 
 async function fetchRemote() {
-  const { token, repo, path, branch } = ghConfig();
-  if (!token) return null;
   setSyncUI('syncing', '读取中…');
   try {
-    // 先用 raw URL 读内容（无 CORS 限制），再用 API 拿 SHA
-    const rawUrl = `https://raw.githubusercontent.com/${repo}/${branch}/${path}?t=${Date.now()}`;
-    const rawRes = await fetch(rawUrl);
-    if (!rawRes.ok) throw new Error(`raw HTTP ${rawRes.status}`);
-    const decoded = await rawRes.json();
-    // 获取 SHA（写入时需要）
-    const apiRes = await fetch(
-      `https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}`,
-      { headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' } }
-    );
-    if (apiRes.ok) { const meta = await apiRes.json(); ghSha = meta.sha; }
+    const res = await fetch(API_URL + '?t=' + Date.now());
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const decoded = await res.json();
     setSyncUI('ok', '已同步');
     return decoded;
-  } catch (e) {
+  } catch(e) {
     setSyncUI('error', '读取失败');
     console.error('fetchRemote', e);
     return null;
@@ -622,23 +567,17 @@ async function fetchRemote() {
 }
 
 async function pushRemote(payload) {
-  const { token, repo, path, branch } = ghConfig();
-  if (!token) return false;
   setSyncUI('syncing', '保存中…');
   try {
-    const content = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
-    const body = { message: `update devices ${new Date().toISOString().slice(0,10)}`, content, branch };
-    if (ghSha) body.sha = ghSha;
-    const res = await fetch(
-      `https://api.github.com/repos/${repo}/contents/${path}`,
-      { method: 'PUT', headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
-    );
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const json = await res.json();
-    ghSha = json.content.sha;
+    const res = await fetch(API_URL, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     setSyncUI('ok', '已保存');
     return true;
-  } catch (e) {
+  } catch(e) {
     setSyncUI('error', '保存失败');
     console.error('pushRemote', e);
     return false;
@@ -646,44 +585,8 @@ async function pushRemote(payload) {
 }
 
 function handleSyncClick() {
-  const cfg = ghConfig();
-  document.getElementById('cfg-token').value  = localStorage.getItem(GH_TOKEN_KEY) || '';
-  document.getElementById('cfg-repo').value   = cfg.repo;
-  document.getElementById('cfg-path').value   = cfg.path;
-  document.getElementById('cfg-branch').value = cfg.branch;
-  openModal('tokenModal');
-}
-
-async function saveToken() {
-  const token  = document.getElementById('cfg-token').value.trim();
-  const repo   = document.getElementById('cfg-repo').value.trim()   || 'bennywu-bj/devices';
-  const path   = document.getElementById('cfg-path').value.trim()   || 'devices/devices.json';
-  const branch = document.getElementById('cfg-branch').value.trim() || 'main';
-  localStorage.setItem(GH_TOKEN_KEY,  token);
-  localStorage.setItem(GH_REPO_KEY,   repo);
-  localStorage.setItem(GH_PATH_KEY,   path);
-  localStorage.setItem(GH_BRANCH_KEY, branch);
-  closeModal('tokenModal');
-  if (token) {
-    const remote = await fetchRemote();
-    if (remote) {
-      data = remote;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      render();
-      notify('同步成功，数据已更新 ✓', 'success');
-    } else {
-      notify('Token 配置已保存，但读取失败，请检查权限', 'error');
-    }
-  }
-}
-
-function clearToken() {
-  if (!confirm('清除 GitHub 配置？数据仍保留在本地。')) return;
-  [GH_TOKEN_KEY, GH_REPO_KEY, GH_PATH_KEY, GH_BRANCH_KEY].forEach(k => localStorage.removeItem(k));
-  ghSha = null;
-  setSyncUI('', '未配置');
-  closeModal('tokenModal');
-  notify('配置已清除', 'error');
+  // 服务器模式不需要配置，点击手动重新拉取
+  loadWithRemote();
 }
 
 // ─── Theme ────────────────────────────────────────────────────────────────────
@@ -711,29 +614,22 @@ function load() {
   if (!data.devices.length) {
     try { const e = window.__INITIAL_DATA__; if (e) { data = e; } } catch(e) {}
   }
-  // 检查是否配置了 token
-  if (!localStorage.getItem(GH_TOKEN_KEY)) {
-    setSyncUI('', '未配置');
-  }
+  setSyncUI('', '点击刷新');
 }
 async function loadWithRemote() {
   load();
   render(); // 先显本地数据，不让用户等待
-  if (localStorage.getItem(GH_TOKEN_KEY)) {
-    const remote = await fetchRemote();
-    if (remote) {
-      data = remote;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      render();
-    }
+  const remote = await fetchRemote();
+  if (remote) {
+    data = remote;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    render();
   }
 }
 async function save() {
   data.lastUpdated = new Date().toISOString().slice(0,10);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  if (localStorage.getItem(GH_TOKEN_KEY)) {
-    await pushRemote(data);
-  }
+  await pushRemote(data);
 }
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 
